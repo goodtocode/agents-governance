@@ -9,13 +9,13 @@ on:
     branches:
       - main
     paths:
-      - .github/workflows/gtc-agents-governance-nuget.yml
+      - .github/workflows/agents-governance-nuget.yml
       - src/**
   push:
     branches:
       - main
     paths:
-      - .github/workflows/gtc-agents-governance-nuget.yml
+      - .github/workflows/agents-governance-nuget.yml
       - src/**
   workflow_dispatch:
     inputs:
@@ -54,8 +54,8 @@ jobs:
     env:
       RUNTIME_ENV: "Development"
       CONFIGURATION: "Release"
-      VERSION_MAJOR: '2'
-      VERSION_MINOR: '0'
+      VERSION_MAJOR: '1'
+      VERSION_MINOR: '1'
 
     steps:
       - name: checkout
@@ -79,7 +79,7 @@ jobs:
 
       - name: Set-Version.ps1
         run: |
-          $version = ${{ env.SCRIPTS_PATH }}/ci/Set-Version.ps1 -Path ${{ env.SRC_PATH }} -VersionToReplace 2.0.0 -Major ${{ env.VERSION_MAJOR }} -Minor ${{ env.VERSION_MINOR }} -Patch $env:GITHUB_RUN_NUMBER
+          $version = ${{ env.SCRIPTS_PATH }}/ci/Set-Version.ps1 -Path ${{ env.SRC_PATH }} -VersionToReplace 1.0.0 -Major ${{ env.VERSION_MAJOR }} -Minor ${{ env.VERSION_MINOR }} -Patch $env:GITHUB_RUN_NUMBER
           echo $version
           echo "VERSION=$version" >> $GITHUB_ENV
         shell: pwsh
@@ -138,6 +138,13 @@ jobs:
           name: nuget-package
           path: ${{ env.NUGET_OUTPUT }}
 
+      - name: NuGet Login (OIDC trusted publishing)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       - name: Publish to NuGet.org
         run: |
-          dotnet nuget push ${{ env.NUGET_OUTPUT }}/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push ${{ env.NUGET_OUTPUT }}/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        shell: pwsh
