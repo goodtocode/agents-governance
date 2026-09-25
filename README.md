@@ -1,5 +1,7 @@
 # Goodtocode.Agents.Governance Quick Start
 
+[![NuGet CI/CD](https://github.com/goodtocode/agents-governance/actions/workflows/gtc-agents-governance-nuget.yml/badge.svg)](https://github.com/goodtocode/agents-governance/actions/workflows/gtc-agents-governance-nuget.yml)
+
 Use this package in any inference-driven workflow (Microsoft.Extensions.AI, Microsoft Agent Framework, or Semantic Kernel) to add consistent governance for:
 
 - Observability (trace and evidence visibility)
