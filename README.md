@@ -1,6 +1,8 @@
 # Goodtocode.Agents.Governance Quick Start
 
-[![NuGet CI/CD](https://github.com/goodtocode/agents-governance/actions/workflows/gtc-agents-governance-nuget.yml/badge.svg)](https://github.com/goodtocode/agents-governance/actions/workflows/gtc-agents-governance-nuget.yml)
+[![NuGet CI/CD](https://github.com/goodtocode/agents-governance/actions/workflows/agents-governance-nuget.yml/badge.svg)](https://github.com/goodtocode/agents-governance/actions/workflows/agents-governance-nuget.yml)
+
+[![NuGet](https://img.shields.io/nuget/v/Goodtocode.Agents.Governance.svg?label=NuGet)](https://www.nuget.org/packages/Goodtocode.Agents.Governance)
 
 Use this package in any inference-driven workflow (Microsoft.Extensions.AI, Microsoft Agent Framework, or Semantic Kernel) to add consistent governance for:
 
@@ -8,6 +10,108 @@ Use this package in any inference-driven workflow (Microsoft.Extensions.AI, Micr
 - Auditability (actor and tool accountability)
 - Repeatability (stable replay baselines)
 - Defensibility (justified and explainable outcomes)
+
+---
+
+## Why the Four Pillars Matter
+
+Generative AI inference is inherently non-deterministic: the same prompt, sent twice, can produce
+two different outputs, and a model can hallucinate plausible-sounding but false or unsupported
+claims. Traditional software correctness practices (unit tests, fixed I/O contracts) do not fully
+apply when the "function" under test is a probabilistic model. Governance is how this package
+closes that gap — not by making the model deterministic, but by making every inference **provable,
+traceable, and replay-checkable** regardless of what the model actually returns.
+
+Each pillar addresses a distinct failure mode of AI inference:
+
+### Observability — "Can we see what happened?"
+
+**Value & intent:** Every inference action must leave a traceable record: trace/correlation
+identifiers, timestamps, and evidence references. Without this, a hallucinated or wrong answer is
+just an isolated bad output with no way to reconstruct the run that produced it.
+
+**Why it matters for hallucination mitigation:** Observability turns "the model said something
+wrong" into "here is the exact prompt, input, evidence, and context that led to that output" —
+which is a prerequisite for diagnosing *why* a hallucination occurred and whether it's systemic.
+
+### Auditability — "Who did it, and with what?"
+
+**Value & intent:** Every action must be attributable to a principal (user, service, or agent),
+a tenant/owner, and the tools/connectors it used. This package enforces `OwnerId`, `TenantId`,
+and `ToolRefs` as first-class governance fields, not optional metadata.
+
+**Why it matters:** AI agents increasingly act autonomously and invoke tools on a user's behalf.
+If an agent's tool call or decision can't be tied back to an accountable actor, the organization
+has no way to assign responsibility, revoke trust, or investigate misuse — hallucinations included.
+
+### Repeatability — "Would we get the same result again?"
+
+**Value & intent:** This package computes and persists deterministic `PromptHash` and `InputHash`
+values for every inference call, plus model/version and seed metadata, so a later "replay" can be
+compared against the original run via `GovernanceReplayGuard`.
+
+**Why it matters most for inference variability:** Because LLM inference is not guaranteed to
+repeat the same result twice (even at temperature 0, across model versions, or under load-balanced
+routing), repeatability governance doesn't promise identical output — it promises **detectable
+drift**. If a replay diverges from its baseline, that divergence is itself a governed, auditable
+signal, rather than a silent surprise.
+
+### Defensibility — "Can we justify the result?"
+
+**Value & intent:** Every governed output must carry the policy applied, the justification
+references, a reasoning summary, and a confidence score. This is the pillar most directly aimed
+at hallucination: it forces the system to record *why* a result was accepted, not just what the
+result was.
+
+**Why it matters:** A hallucinated output that passes through ungoverned is indistinguishable from
+a correct one until a human notices. Requiring policy/evidence/confidence at the point of
+inference means low-confidence or policy-violating outputs can be flagged, rejected, or routed to
+human review before they propagate downstream.
+
+### The pillars together
+
+No single pillar is sufficient on its own:
+- Observability without defensibility tells you *what happened* but not *whether it was justified*.
+- Defensibility without repeatability lets you justify one run but gives no way to detect drift on the next.
+- Repeatability without auditability tells you *that* something changed but not *who/what* is accountable.
+
+Together, the four pillars make hallucination and inference variability **manageable risks with
+evidence trails**, instead of untraceable, unexplainable, one-off failures. See
+[pipeline-governance-principles.md](../crucible-web/docs/governance/pipeline-governance-principles.md)
+in the Crucible product for the full durable governance-lock model (`GovernanceProfile`,
+`GovernanceLockHash`, and the collect/evaluate/record evidence chain) that this package's runtime
+enforcement is designed to interoperate with.
+
+## How This Differs From LangChain / LangGraph-Style Frameworks
+
+Popular Python agent frameworks in the "Lang\*" family (LangChain, LangGraph, and similar) provide
+strong orchestration primitives — chains, graphs, tool-calling, memory — and some offer tracing or
+callback hooks that touch on observability. However, they are built around an **AI-agent-first**
+execution model: the graph/chain is the unit of control, and deterministic steps are typically just
+another node type inside an inherently agentic, LLM-driven flow.
+
+`Goodtocode.Agents.Governance` takes a different position:
+
+- **Enforcement precedes execution.** `GovernanceEnforcer.Enforce(...)` is a mandatory gate that
+  must succeed *before* any model or tool call runs — it is not an optional callback or trace
+  sink attached after the fact.
+- **Governance is closed for modification, open for extension.** Core directives
+  (observability/auditability/defensibility/repeatability) cannot be weakened or removed by
+  extensions (`IGovernanceDirectiveExtension`); only additive, domain-specific directives are
+  allowed.
+- **True hybrid deterministic + AI workflows.** Because governance is enforced at the boundary
+  of *any* inference call rather than baked into an agent-graph runtime, this package supports
+  pipelines that freely mix fully deterministic, rule-based steps with AI-agent steps in the same
+  governed execution — each inference step is individually gated, hashed, and made replay-checkable,
+  while deterministic steps run without needing to be reshaped into agent/graph nodes to get the
+  same audit trail. Lang\*-style frameworks generally assume the AI-agent graph *is* the workflow,
+  which makes injecting non-agentic, deterministic business logic with equivalent governance
+  coverage awkward or impossible without significant custom scaffolding.
+
+The result: teams can adopt an agentic workflow where it adds value, keep deterministic logic
+where it's more reliable and cheaper, and get the same observability/auditability/defensibility/
+repeatability guarantees across both — which is the governance model Crucible's pipeline principles
+document requires end-to-end (Collect → Evaluate → Record).
 
 ---
 
