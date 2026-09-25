@@ -17,8 +17,8 @@
 		<Company>Goodtocode</Company>
     <Description>AI governance primitives and application enforcement for observability, auditability, repeatability, and defensibility.</Description>
     <PackageTags>ai;governance;observability;auditability;repeatability;defensibility</PackageTags>
-		<RepositoryUrl>https://github.com/Goodtocode/agent-governance</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/Goodtocode/agent-governance</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Goodtocode/agents-governance</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/Goodtocode/agents-governance</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Copyright>Copyright © 2026 Goodtocode</Copyright>
 		<PackageIcon>Goodtocode-icon.png</PackageIcon>
