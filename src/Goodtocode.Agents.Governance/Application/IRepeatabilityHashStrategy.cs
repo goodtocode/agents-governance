@@ -23,4 +23,12 @@ public interface IRepeatabilityHashStrategy
     /// <param name="inputs">Raw input map. May be empty, but never null.</param>
     /// <returns>Deterministic hash string.</returns>
     string ComputeInputHash(IReadOnlyDictionary<string, object?> inputs);
+
+    /// <summary>
+    /// Computes a deterministic hash of governed structured output content, used to assert
+    /// output identity for a Replay in addition to the existing prompt/input hashes.
+    /// </summary>
+    /// <param name="outputContent">Raw governed output content. May be empty, but never null.</param>
+    /// <returns>Deterministic hash string.</returns>
+    string ComputeOutputHash(string outputContent) => ComputePromptHash(outputContent);
 }

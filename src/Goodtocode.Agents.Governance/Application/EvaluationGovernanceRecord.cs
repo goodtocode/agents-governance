@@ -88,6 +88,25 @@ public sealed record RepeatabilityRecord
     /// Gets or sets optional execution seed.
     /// </summary>
     public int? Seed { get; init; }
+
+    /// <summary>
+    /// Gets or sets the declared repeatability replay mode. Defaults to <see cref="RepeatabilityReplayMode.Rerun"/>,
+    /// since a first-time execution and a fresh re-collection are both Rerun behavior.
+    /// </summary>
+    public RepeatabilityReplayMode ReplayMode { get; init; } = RepeatabilityReplayMode.Rerun;
+
+    /// <summary>
+    /// Gets or sets the prior execution this record repeats. Required when <see cref="ReplayMode"/>
+    /// is <see cref="RepeatabilityReplayMode.Recall"/> or <see cref="RepeatabilityReplayMode.Replay"/>.
+    /// </summary>
+    public GovernanceReference? SourceExecutionRef { get; init; }
+
+    /// <summary>
+    /// Gets or sets the hash of the governed structured output. Required in addition to
+    /// <see cref="PromptHash"/> and <see cref="InputHash"/> before a Replay can claim
+    /// <see cref="DeterministicReplaySupported"/>.
+    /// </summary>
+    public string OutputHash { get; init; } = string.Empty;
 }
 
 /// <summary>
