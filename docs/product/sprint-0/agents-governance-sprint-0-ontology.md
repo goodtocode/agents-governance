@@ -10,6 +10,7 @@ Define canonical terms for governance enforcement across AI inference workflows 
 - Governance Aggregate: EvaluationGovernanceRecord with PolicyProfileVersion + four pillars.
 - Observability: TraceId, CorrelationId, EvidenceRefs.
 - Repeatability: ModelRef, ModelVersion, PromptHash, InputHash, DeterministicReplaySupported, Seed.
+- Repeatability Replay Mode: Recall (rehydrate persisted record, no inference), Replay (resubmit same evidence for exact-match verification), Rerun (fresh collection and/or non-deterministic re-evaluation expected to diverge, linked via SourceExecutionRef).
 - Auditability: OwnerId, TenantId, PrincipalDisplay, ToolRefs.
 - Defensibility: PoliciesApplied, JustificationRefs, ReasoningSummary, ConfidenceScore.
 - Enforcement/Validation: GovernanceEvaluationRequest, GovernedEvaluationResult, EvaluationGovernanceValidator, GovernanceValidationIssue, GovernanceValidationException.
@@ -20,7 +21,7 @@ Define canonical terms for governance enforcement across AI inference workflows 
 - Governed Output Contract: GovernedEvaluationOutputSchema + criterion and audit trace types.
 
 ## Ubiquitous Language (Approved)
-Governance, Policy Profile, Directive, Evidence Reference, Justification Reference, Replay Drift, Governed Output.
+Governance, Policy Profile, Directive, Evidence Reference, Justification Reference, Replay Drift, Governed Output, Recall, Replay, Rerun, Source Execution Reference.
 
 ## Synonyms Rejected
 - Guardrail payload -> Governance Record
@@ -34,6 +35,7 @@ Governance, Policy Profile, Directive, Evidence Reference, Justification Referen
 3. Prompt composition is extensible but safety-constrained.
 4. Replay protection requires exact snapshot matching.
 5. Governed output validation is part of the product contract.
+6. Repeatability decomposes into three explicit replay modes (Recall, Replay, Rerun); a single `DeterministicReplaySupported` flag is not sufficient to express intent.
 
 ## Traceability
 Canonical terms map to src/Goodtocode.Agents.Governance/Application/* and src/Goodtocode.Agents.Governance/Domain/*.

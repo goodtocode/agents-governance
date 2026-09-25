@@ -47,14 +47,32 @@ has no way to assign responsibility, revoke trust, or investigate misuse — hal
 ### Repeatability — "Would we get the same result again?"
 
 **Value & intent:** This package computes and persists deterministic `PromptHash` and `InputHash`
-values for every inference call, plus model/version and seed metadata, so a later "replay" can be
-compared against the original run via `GovernanceReplayGuard`.
+values for every inference call, plus model/version and seed metadata, so a later "repeat" can be
+compared against the original run via `GovernanceReplayGuard`. "Repeat" is not one behavior — a
+governed execution must declare which of three replay modes it is performing via
+`RepeatabilityRecord.ReplayMode`:
+
+- **Rerun** (the default): a fresh execution — re-collect evidence and/or re-invoke a
+  non-deterministic model against the same prompt/rubric version, expecting the result to
+  legitimately diverge from any prior execution. Use `GovernanceReplayGuard.CompareRerun` to get a
+  non-throwing drift descriptor (`GovernanceRerunComparison`) instead of a validation failure —
+  divergence is the expected signal here, not an error.
+- **Replay**: resubmit the same collected evidence to the same model reference, model version, and
+  prompt/rubric version to verify exact reproduction. `GovernanceReplayGuard.EnsureExactReplay`
+  throws on any mismatch, including a mismatched `OutputHash` when both sides provide one — proving
+  output identity, not only input identity, before `DeterministicReplaySupported` can be claimed.
+- **Recall**: rehydrate a persisted governance record without invoking inference or re-collecting
+  anything. Zero cost, zero drift risk.
+
+`Recall` and `Replay` both require `RepeatabilityRecord.SourceExecutionRef` pointing at the prior
+execution being repeated; `EvaluationGovernanceValidator` enforces this.
 
 **Why it matters most for inference variability:** Because LLM inference is not guaranteed to
 repeat the same result twice (even at temperature 0, across model versions, or under load-balanced
 routing), repeatability governance doesn't promise identical output — it promises **detectable
-drift**. If a replay diverges from its baseline, that divergence is itself a governed, auditable
-signal, rather than a silent surprise.
+drift**. If a Replay diverges from its baseline, that divergence is itself a governed, auditable
+signal, rather than a silent surprise, and a Rerun's divergence is recorded as expected variance
+rather than forced into a pass/fail check.
 
 ### Defensibility — "Can we justify the result?"
 

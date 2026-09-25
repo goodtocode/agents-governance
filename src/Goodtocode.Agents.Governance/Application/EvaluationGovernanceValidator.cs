@@ -1,3 +1,5 @@
+using Goodtocode.Agents.Governance.Domain;
+
 namespace Goodtocode.Agents.Governance.Application;
 
 /// <summary>
@@ -54,6 +56,12 @@ public static class EvaluationGovernanceValidator
         if (string.IsNullOrWhiteSpace(governance.Repeatability.InputHash))
         {
             result.Add(nameof(RepeatabilityRecord.InputHash), "InputHash is required.");
+        }
+
+        if (governance.Repeatability.ReplayMode is RepeatabilityReplayMode.Recall or RepeatabilityReplayMode.Replay
+            && governance.Repeatability.SourceExecutionRef is null)
+        {
+            result.Add(nameof(RepeatabilityRecord.SourceExecutionRef), "SourceExecutionRef is required for Recall and Replay.");
         }
 
         if (governance.Auditability.OwnerId == Guid.Empty)

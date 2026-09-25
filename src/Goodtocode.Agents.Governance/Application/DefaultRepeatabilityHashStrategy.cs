@@ -35,6 +35,12 @@ public sealed class DefaultRepeatabilityHashStrategy : IRepeatabilityHashStrateg
         return ComputeSha256(normalizedJson);
     }
 
+    /// <inheritdoc />
+    public string ComputeOutputHash(string outputContent)
+    {
+        return ComputeSha256(outputContent ?? string.Empty);
+    }
+
     private static string Canonicalize(object? value)
     {
         var json = JsonSerializer.Serialize(value);
