@@ -32,3 +32,7 @@ When modifying docs, keep terms aligned with Sprint 0 artifacts:
 - Ensure workflow commands match installed SDK and command semantics.
 - Keep package CI focused on restore/build/test/pack for this solution and project names.
 - Avoid environment assumptions that do not exist in this repository.
+
+## Source Control Workflow
+- Leave all changes local and uncommitted. Do not run `git commit`, `git push`, or open pull requests; the maintainer reviews the uncommitted diff first and then commits, pushes, and opens the PR.
+- Do not create or switch branches unless asked. Summarize what changed so the diff can be reviewed.

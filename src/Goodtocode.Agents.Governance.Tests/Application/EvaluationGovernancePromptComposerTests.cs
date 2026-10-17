@@ -111,23 +111,15 @@ public sealed class EvaluationGovernancePromptComposerTests
         Assert.IsTrue(exception.Message.Contains("disallowed directive fragment", StringComparison.Ordinal));
     }
 
-    private sealed class TestDirectiveExtension : IGovernanceDirectiveExtension
+    private sealed class TestDirectiveExtension(string extensionId, string extensionVersion, int order, string directive) : IGovernanceDirectiveExtension
     {
-        private readonly string _directive;
+        private readonly string _directive = directive;
 
-        public TestDirectiveExtension(string extensionId, string extensionVersion, int order, string directive)
-        {
-            ExtensionId = extensionId;
-            ExtensionVersion = extensionVersion;
-            Order = order;
-            _directive = directive;
-        }
+        public string ExtensionId { get; } = extensionId;
 
-        public string ExtensionId { get; }
+        public string ExtensionVersion { get; } = extensionVersion;
 
-        public string ExtensionVersion { get; }
-
-        public int Order { get; }
+        public int Order { get; } = order;
 
         public GovernanceDirectiveContribution Build(EvaluationGovernancePromptRequest request)
         {

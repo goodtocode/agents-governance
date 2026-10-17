@@ -3,7 +3,7 @@ namespace Goodtocode.Agents.Governance.Domain;
 /// <summary>
 /// Declares which of the three repeatability behaviors a governed execution is performing.
 /// </summary>
-public enum RepeatabilityReplayMode
+public enum RepeatMode
 {
     /// <summary>
     /// Fresh execution: re-collect evidence and/or re-invoke a non-deterministic model against

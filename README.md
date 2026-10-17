@@ -67,6 +67,31 @@ governed execution must declare which of three replay modes it is performing via
 `Recall` and `Replay` both require `RepeatabilityRecord.SourceExecutionRef` pointing at the prior
 execution being repeated; `EvaluationGovernanceValidator` enforces this.
 
+#### Repeat policy (stage plan)
+
+Governance decides *what* a repeat must run; it knows nothing about how your executor runs it. Ask
+`IRepeatPolicy` for a `ReplayStagePlan`. Its `Run` is a set of `ActionType` flags (`Collect`, `Evaluate`, `Record`) - the governance classification of what a workflow step does - and your executor runs exactly those actions:
+
+| Mode   | Collect | Evaluate | Record                                   |
+|--------|---------|----------|------------------------------------------|
+| Rerun  | run     | run      | run                                      |
+| Replay | skip    | run      | run                                      |
+| Recall | skip    | skip     | skip (pure read; `RecallRecords` opts in)|
+
+```csharp
+services.AddGovernanceRepeatability(o => o.RecallRecords = false); // validated on start
+
+var request = RepeatRequest.Create(RepeatMode.Replay, sourceExecutionId); // Rerun forbids a source
+var source  = await resolver.ResolveAsync(request, new RepeatScope(tenantId), ct); // your IRepeatSourceResolver
+var plan    = policy.Plan(request);                                  // plan.Run is an ActionType flags set
+// ...run the planned actions in your executor, then:
+record = recorder.Record(record, request, plan.Run);
+```
+
+`RepeatGuard` throws typed `RepeatException`s with a `RepeatFailureCategory` (Validation 400,
+Forbidden 403, NotFound 404, Conflict 409). Recording writes `ReplayMode`, `SourceExecutionRef`, and
+`ActionsRun` as first-class fields (defaults: Rerun, null). Playbook consumes this directly: `PlaybookExecutor` plans each repeat through `IRepeatPolicy`.
+
 **Why it matters most for inference variability:** Because LLM inference is not guaranteed to
 repeat the same result twice (even at temperature 0, across model versions, or under load-balanced
 routing), repeatability governance doesn't promise identical output — it promises **detectable

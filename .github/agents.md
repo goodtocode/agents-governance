@@ -41,3 +41,7 @@ AI agents must not:
 - Tests pass for affected areas.
 - Docs remain consistent with code.
 - File paths and naming match this repository.
+
+## Source Control Workflow
+- Leave all changes local and uncommitted. Do not run `git commit`, `git push`, or open pull requests; the maintainer reviews the uncommitted diff first and then commits, pushes, and opens the PR.
+- Do not create or switch branches unless asked. Summarize what changed so the diff can be reviewed.

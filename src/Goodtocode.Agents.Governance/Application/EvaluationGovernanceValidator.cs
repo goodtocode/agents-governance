@@ -58,7 +58,7 @@ public static class EvaluationGovernanceValidator
             result.Add(nameof(RepeatabilityRecord.InputHash), "InputHash is required.");
         }
 
-        if (governance.Repeatability.ReplayMode is RepeatabilityReplayMode.Recall or RepeatabilityReplayMode.Replay
+        if (governance.Repeatability.ReplayMode is RepeatMode.Recall or RepeatMode.Replay
             && governance.Repeatability.SourceExecutionRef is null)
         {
             result.Add(nameof(RepeatabilityRecord.SourceExecutionRef), "SourceExecutionRef is required for Recall and Replay.");
