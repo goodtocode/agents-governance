@@ -49,9 +49,9 @@ public sealed class EvaluationGovernanceValidatorTests
     }
 
     [TestMethod]
-    [DataRow(RepeatabilityReplayMode.Recall)]
-    [DataRow(RepeatabilityReplayMode.Replay)]
-    public void ValidateWithRecallOrReplayModeRequiresSourceExecutionRef(RepeatabilityReplayMode mode)
+    [DataRow(RepeatMode.Recall)]
+    [DataRow(RepeatMode.Replay)]
+    public void ValidateWithRecallOrReplayModeRequiresSourceExecutionRef(RepeatMode mode)
     {
         // Arrange
         var record = TestDataFactory.CreateValidGovernanceRecord() with
@@ -72,9 +72,9 @@ public sealed class EvaluationGovernanceValidatorTests
     }
 
     [TestMethod]
-    [DataRow(RepeatabilityReplayMode.Recall)]
-    [DataRow(RepeatabilityReplayMode.Replay)]
-    public void ValidateWithRecallOrReplayModeAndSourceExecutionRefIsValid(RepeatabilityReplayMode mode)
+    [DataRow(RepeatMode.Recall)]
+    [DataRow(RepeatMode.Replay)]
+    public void ValidateWithRecallOrReplayModeAndSourceExecutionRefIsValid(RepeatMode mode)
     {
         // Arrange
         var record = TestDataFactory.CreateValidGovernanceRecord() with

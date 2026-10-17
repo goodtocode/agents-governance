@@ -3,22 +3,17 @@ namespace Goodtocode.Agents.Governance.Application;
 /// <summary>
 /// Exception raised when a governance record fails validation.
 /// </summary>
-public sealed class GovernanceValidationException : Exception
+/// <remarks>
+/// Initializes a new instance of the <see cref="GovernanceValidationException"/> class.
+/// </remarks>
+/// <param name="issues">Validation issues.</param>
+public sealed class GovernanceValidationException(IReadOnlyCollection<GovernanceValidationIssue> issues) : Exception(BuildMessage(issues))
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GovernanceValidationException"/> class.
-    /// </summary>
-    /// <param name="issues">Validation issues.</param>
-    public GovernanceValidationException(IReadOnlyCollection<GovernanceValidationIssue> issues)
-        : base(BuildMessage(issues))
-    {
-        Issues = issues;
-    }
 
     /// <summary>
     /// Gets validation issues.
     /// </summary>
-    public IReadOnlyCollection<GovernanceValidationIssue> Issues { get; }
+    public IReadOnlyCollection<GovernanceValidationIssue> Issues { get; } = issues;
 
     private static string BuildMessage(IReadOnlyCollection<GovernanceValidationIssue> issues)
     {

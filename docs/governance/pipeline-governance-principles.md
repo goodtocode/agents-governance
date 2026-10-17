@@ -49,7 +49,7 @@ this distinction, so every repeated execution must record an explicit `ReplayMod
    capture an agreement/variance summary against the prior record rather than throwing on
    mismatch — mismatch is the expected signal, not an error.
 
-`RepeatabilityRecord` is extended with `ReplayMode` (`RepeatabilityReplayMode.Recall` | `Replay` |
+`RepeatabilityRecord` is extended with `ReplayMode` (`RepeatMode.Recall` | `Replay` |
 `Rerun`, default `Rerun`) and `SourceExecutionRef`, and `IRepeatabilityHashStrategy` is extended
 with `ComputeOutputHash` so Replay can assert output identity, not only input identity.
 `GovernanceReplayGuard.EnsureExactReplay` now also compares `OutputHash` when both baseline and
