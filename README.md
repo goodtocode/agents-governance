@@ -6,10 +6,12 @@
 
 Use this package in any inference-driven workflow (Microsoft.Extensions.AI, Microsoft Agent Framework, or Semantic Kernel) to add consistent governance for:
 
-- Observability (trace and evidence visibility)
-- Auditability (actor and tool accountability)
-- Repeatability (stable replay baselines)
-- Defensibility (justified and explainable outcomes)
+| Pillar | Description (in parens) | Example persisted workflow data (`ActivityType`) |
+|--------|--------------------------|---------------------------------------------------|
+| Observability | trace and evidence visibility | `ActivityType.Collect` with `TraceId`, `CorrelationId`, `StartedAtUtc`, `CompletedAtUtc`, `EvidenceRef` |
+| Auditability | actor and tool accountability | `ActivityType.Collect`/`ActivityType.Record` with `OwnerId`, `TenantId`, `ToolRefs`, `ExecutionRef` |
+| Repeatability | stable replay baselines | `ActivityType.Evaluate`/`ActivityType.Record` with `PromptHash`, `InputHash`, `OutputHash`, `ModelRef`, `ModelVersion`, `Seed`, `ReplayMode`, `SourceExecutionRef` |
+| Defensibility | justified and explainable outcomes | `ActivityType.Record` with `PolicyRef`, `JustificationRefs`, `ReasoningSummary`, `ConfidenceScore` |
 
 ---
 
@@ -67,10 +69,10 @@ governed execution must declare which of three replay modes it is performing via
 `Recall` and `Replay` both require `RepeatabilityRecord.SourceExecutionRef` pointing at the prior
 execution being repeated; `EvaluationGovernanceValidator` enforces this.
 
-#### Repeat policy (stage plan)
+#### Repeat policy (repeat plan)
 
 Governance decides *what* a repeat must run; it knows nothing about how your executor runs it. Ask
-`IRepeatPolicy` for a `ReplayStagePlan`. Its `Run` is a set of `ActionType` flags (`Collect`, `Evaluate`, `Record`) - the governance classification of what a workflow step does - and your executor runs exactly those actions:
+`IRepeatPolicy` for a `RepeatPlan`. Its `Run` is a set of `ActionType` flags (`Collect`, `Evaluate`, `Record`) - the governance classification of what a workflow step does - and your executor runs exactly those actions:
 
 | Mode   | Collect | Evaluate | Record                                   |
 |--------|---------|----------|------------------------------------------|
