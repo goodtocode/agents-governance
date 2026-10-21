@@ -11,14 +11,16 @@ public sealed record GovernancePillarsProfile(
     bool ObservabilityRequired,
     bool AuditabilityRequired,
     bool RepeatabilityRequired,
-    bool DefensibilityRequired)
+    bool DefensibilityRequired,
+    bool IntentRequired = false)
 {
     /// <summary>
     /// Creates a strict profile where all four pillars are required.
     /// </summary>
     /// <param name="policyProfileVersion">Version identifier for the governing policy profile.</param>
+    /// <param name="intentRequired">True when the Agentic Intent policy must govern every inference.</param>
     /// <returns>A strict governance profile.</returns>
-    public static GovernancePillarsProfile CreateStrict(string policyProfileVersion)
+    public static GovernancePillarsProfile CreateStrict(string policyProfileVersion, bool intentRequired = false)
     {
         if (string.IsNullOrWhiteSpace(policyProfileVersion))
         {
@@ -30,7 +32,8 @@ public sealed record GovernancePillarsProfile(
             ObservabilityRequired: true,
             AuditabilityRequired: true,
             RepeatabilityRequired: true,
-            DefensibilityRequired: true);
+            DefensibilityRequired: true,
+            IntentRequired: intentRequired);
     }
 
     /// <summary>
@@ -62,6 +65,12 @@ public sealed record GovernancePillarsProfile(
             AuditabilityRequired ? "1" : "0",
             RepeatabilityRequired ? "1" : "0",
             DefensibilityRequired ? "1" : "0");
+
+        // Appended only when set so lock hashes of existing four-pillar profiles remain stable.
+        if (IntentRequired)
+        {
+            payload += "|intent:1";
+        }
 
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(payload));
         return Convert.ToHexString(bytes);

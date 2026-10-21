@@ -13,7 +13,7 @@ public sealed class GovernanceEnforcerTests
         var request = new GovernanceEvaluationRequest
         {
             Governance = TestDataFactory.CreateValidGovernanceRecord(),
-            ExistingSystemInstruction = "Use strict governance."
+            Instruction = AgentInstruction.Create("Use strict governance.")
         };
 
         // Act

@@ -1,3 +1,5 @@
+using Goodtocode.Agents.Governance.Domain;
+
 namespace Goodtocode.Agents.Governance.Application;
 
 /// <summary>
@@ -11,9 +13,16 @@ public sealed class GovernanceEvaluationRequest
     public EvaluationGovernanceRecord Governance { get; init; } = new();
 
     /// <summary>
-    /// Gets or sets optional existing system instruction.
+    /// Gets or sets the optional Instruction (persona or caller text). Its hash is folded into the prompt hash,
+    /// so a change is drift.
     /// </summary>
-    public string? ExistingSystemInstruction { get; init; }
+    public AgentInstruction? Instruction { get; init; }
+
+    /// <summary>
+    /// Gets or sets the Agentic Intent policy applied during enforcement. Its lock hash is stamped onto
+    /// <see cref="EvaluationGovernanceRecord.Intent"/> and folded into the prompt hash, so a policy change is drift.
+    /// </summary>
+    public IntentPolicy? IntentPolicy { get; init; }
 
     /// <summary>
     /// Gets or sets optional raw prompt content used to deterministically compute

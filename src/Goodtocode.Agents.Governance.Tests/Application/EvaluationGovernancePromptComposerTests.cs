@@ -14,7 +14,7 @@ public sealed class EvaluationGovernancePromptComposerTests
         var request = new EvaluationGovernancePromptRequest
         {
             Governance = governance,
-            ExistingSystemInstruction = "Base system instruction."
+            Instruction = AgentInstruction.Create("Base system instruction.")
         };
 
         // Act

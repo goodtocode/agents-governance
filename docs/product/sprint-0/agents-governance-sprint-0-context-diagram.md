@@ -16,6 +16,12 @@ flowchart LR
     Validator -->|invalid| ValidationError[GovernanceValidationException]
     Enforcer --> Composer[EvaluationGovernancePromptComposer]
     Extension[IGovernanceDirectiveExtension*] --> Composer
+    IntentProvider[IIntentPolicyProvider] --> IntentPolicy[IntentPolicy]
+    IntentPolicy --> Request
+    IntentPolicy --> Composer
+    IntentPolicy --> PreambleComposer[GovernancePreambleComposer]
+    PreambleComposer --> Preamble[Preamble per turn]
+    Preamble --> Inference
     Composer --> PromptCtx[EvaluationGovernancePromptContext]
     Enforcer --> Result[GovernedEvaluationResult]
     PromptCtx --> Result

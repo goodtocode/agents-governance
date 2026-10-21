@@ -31,6 +31,38 @@ public sealed record EvaluationGovernanceRecord
     /// Gets or sets defensibility data.
     /// </summary>
     public DefensibilityRecord Defensibility { get; init; } = new();
+
+    /// <summary>
+    /// Gets or sets the Agentic Intent policy that governed the execution.
+    /// </summary>
+    public IntentRecord Intent { get; init; } = new();
+}
+
+/// <summary>
+/// Agentic Intent dimensions for a governed execution: which versioned policy applied, and whether one was required.
+/// </summary>
+public sealed record IntentRecord
+{
+    /// <summary>
+    /// Gets or sets a value indicating whether an Agentic Intent policy is required. When true, a policy id,
+    /// version, and hash must be recorded, and enforcement fails closed without a resolvable policy.
+    /// </summary>
+    public bool Required { get; init; }
+
+    /// <summary>
+    /// Gets or sets the applied policy identifier.
+    /// </summary>
+    public string PolicyId { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the applied policy version.
+    /// </summary>
+    public string PolicyVersion { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the applied policy lock hash (see <see cref="IntentPolicy.ComputeLockHash"/>).
+    /// </summary>
+    public string PolicyHash { get; init; } = string.Empty;
 }
 
 /// <summary>
