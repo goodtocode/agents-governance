@@ -99,6 +99,24 @@ public static class EvaluationGovernanceValidator
             result.Add(nameof(DefensibilityRecord.ConfidenceScore), "ConfidenceScore must be between 0 and 1.");
         }
 
+        if (governance.Intent.Required)
+        {
+            if (string.IsNullOrWhiteSpace(governance.Intent.PolicyId))
+            {
+                result.Add(nameof(IntentRecord.PolicyId), "Intent PolicyId is required when intent is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(governance.Intent.PolicyVersion))
+            {
+                result.Add(nameof(IntentRecord.PolicyVersion), "Intent PolicyVersion is required when intent is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(governance.Intent.PolicyHash))
+            {
+                result.Add(nameof(IntentRecord.PolicyHash), "Intent PolicyHash is required when intent is required.");
+            }
+        }
+
         return result;
     }
 }

@@ -19,16 +19,6 @@ public sealed class EvaluationGovernancePromptComposer : IEvaluationGovernancePr
         "Always include confidence score and uncertainty when evidence is incomplete."
     ];
 
-    private static readonly string[] ProhibitedDirectiveFragments =
-    [
-        "ignore previous instruction",
-        "ignore prior instruction",
-        "disregard previous instruction",
-        "disable governance",
-        "skip governance",
-        "override governance"
-    ];
-
     private readonly IGovernanceDirectiveExtension[] _extensions;
 
     /// <summary>
@@ -67,9 +57,29 @@ public sealed class EvaluationGovernancePromptComposer : IEvaluationGovernancePr
         var builder = new StringBuilder();
         var metadata = BuildCoreMetadata(request.Governance);
 
-        if (!string.IsNullOrWhiteSpace(request.ExistingSystemInstruction))
+        if (request.Governance.Intent.Required && request.IntentPolicy is null)
         {
-            builder.AppendLine(request.ExistingSystemInstruction.Trim());
+            throw new GovernanceValidationException(
+            [
+                new GovernanceValidationIssue(nameof(EvaluationGovernancePromptRequest.IntentPolicy), "An intent policy is required by the governance record.")
+            ]);
+        }
+
+        if (request.IntentPolicy is not null
+            && !string.IsNullOrEmpty(request.Governance.Intent.PolicyHash)
+            && !string.Equals(request.Governance.Intent.PolicyHash, request.IntentPolicy.ComputeLockHash(), StringComparison.Ordinal))
+        {
+            throw new GovernanceValidationException(
+            [
+                new GovernanceValidationIssue(nameof(IntentRecord.PolicyHash), "Intent policy hash does not match the supplied policy.")
+            ]);
+        }
+
+        if (request.Instruction is { } instruction)
+        {
+            // Re-validated because the record can be constructed with a non-validated value via `with`.
+            var checkedInstruction = AgentInstruction.Create(instruction.Text, instruction.Scope);
+            builder.AppendLine(checkedInstruction.Text);
             builder.AppendLine();
         }
 
@@ -81,6 +91,16 @@ public sealed class EvaluationGovernancePromptComposer : IEvaluationGovernancePr
         builder.Append("Policy profile version: ");
         builder.Append(request.Governance.PolicyProfileVersion);
         builder.AppendLine(".");
+
+        if (request.IntentPolicy is { } policy)
+        {
+            builder.AppendLine(IntentInstruction.Render(policy));
+
+            metadata["governance.intent.policyId"] = policy.PolicyId;
+            metadata["governance.intent.policyVersion"] = policy.Version;
+            metadata["governance.intent.policyHash"] = policy.ComputeLockHash();
+            metadata["governance.intent.principleIds"] = string.Join(",", policy.Principles.Select(p => p.PrincipleId));
+        }
 
         ApplyExtensions(builder, metadata, request);
 
@@ -225,9 +245,9 @@ public sealed class EvaluationGovernancePromptComposer : IEvaluationGovernancePr
             ]);
         }
 
-        foreach (var prohibitedFragment in ProhibitedDirectiveFragments)
+        foreach (var prohibitedFragment in new[] { GovernanceDirectiveGuard.FindProhibitedFragment(directive) })
         {
-            if (directive.Contains(prohibitedFragment, StringComparison.OrdinalIgnoreCase))
+            if (prohibitedFragment is not null)
             {
                 throw new GovernanceValidationException(
                 [

@@ -1,3 +1,5 @@
+using Goodtocode.Agents.Governance.Domain;
+
 namespace Goodtocode.Agents.Governance.Application;
 
 /// <summary>
@@ -28,7 +30,13 @@ public sealed class EvaluationGovernancePromptRequest
     public EvaluationGovernanceRecord Governance { get; init; } = new();
 
     /// <summary>
-    /// Gets or sets optional existing system instruction.
+    /// Gets or sets the optional Instruction (persona or caller text), stated once and always composed before the policy.
     /// </summary>
-    public string? ExistingSystemInstruction { get; init; }
+    public AgentInstruction? Instruction { get; init; }
+
+    /// <summary>
+    /// Gets or sets the Agentic Intent policy to embed in the Instruction. Required when
+    /// <see cref="IntentRecord.Required"/> is true on the governance record.
+    /// </summary>
+    public IntentPolicy? IntentPolicy { get; init; }
 }

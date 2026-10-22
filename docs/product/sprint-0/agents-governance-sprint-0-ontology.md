@@ -19,9 +19,13 @@ Define canonical terms for governance enforcement across AI inference workflows 
 - Determinism/Replay: RepeatabilityHashService, GovernanceReplaySnapshot, GovernanceReplayGuard.
 - Policy and References: GovernancePillarsProfile, GovernanceReference.
 - Governed Output Contract: GovernedEvaluationOutputSchema + criterion and audit trace types.
+- Policy (layer beside the four pillars; not a pillar): a versioned, hashable declaration of intent that the pillars make observable, repeatable, auditable and defensible. Agentic Intent is the first policy.
+- Agentic Intent: IntentPolicy (PolicyId, Version, ordered IntentPrinciple of kind Boundary, Value or Conduct), IntentRecord on the governance record, IIntentPolicyProvider (per tenant and jurisdiction), precedence Boundary > Value > Conduct > persona > user request.
+- Instruction: once per chat session, playbook run or instantiation; the composed system instruction including the intent policy.
+- Preamble: before every chat message and every LLM Collect/Evaluate/Record action; IGovernancePreambleComposer, GovernedTurnKind, GovernancePreambleMode (Compact ids, Full text).
 
 ## Ubiquitous Language (Approved)
-Governance, Policy Profile, Directive, Evidence Reference, Justification Reference, Replay Drift, Governed Output, Recall, Replay, Rerun, Source Execution Reference.
+Governance, Policy Profile, Directive, Evidence Reference, Justification Reference, Replay Drift, Governed Output, Recall, Replay, Rerun, Source Execution Reference, Policy, Agentic Intent, Instruction, Preamble.
 
 ## Synonyms Rejected
 - Guardrail payload -> Governance Record

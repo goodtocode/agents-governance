@@ -34,7 +34,8 @@ public sealed class GovernanceEnforcer(
         var promptContext = _promptComposer.Compose(new EvaluationGovernancePromptRequest
         {
             Governance = governance,
-            ExistingSystemInstruction = request.ExistingSystemInstruction
+            Instruction = request.Instruction,
+            IntentPolicy = request.IntentPolicy
         });
 
         return new GovernedEvaluationResult
@@ -47,11 +48,34 @@ public sealed class GovernanceEnforcer(
     private EvaluationGovernanceRecord ApplyRepeatabilityHashes(GovernanceEvaluationRequest request)
     {
         var repeatability = request.Governance.Repeatability;
-        var computedPromptHash = _hashStrategy.ComputePromptHash(request.RepeatabilityPromptContent ?? string.Empty);
+        var promptContent = request.RepeatabilityPromptContent ?? string.Empty;
+        var intent = request.Governance.Intent;
+
+        if (request.Instruction is { } instruction)
+        {
+            promptContent = $"{promptContent}\n[instruction:{instruction.ComputeHash()}]";
+        }
+
+        if (request.IntentPolicy is { } policy)
+        {
+            // Intent identity is derived here, never accepted from the caller, and folded into the prompt hash
+            // so that a policy change surfaces as prompt drift in the replay guard.
+            var policyHash = policy.ComputeLockHash();
+            intent = intent with
+            {
+                PolicyId = policy.PolicyId,
+                PolicyVersion = policy.Version,
+                PolicyHash = policyHash
+            };
+            promptContent = $"{promptContent}\n[intent:{policy.PolicyId}@{policy.Version}#{policyHash}]";
+        }
+
+        var computedPromptHash = _hashStrategy.ComputePromptHash(promptContent);
         var computedInputHash = _hashStrategy.ComputeInputHash(request.RepeatabilityInputs);
 
         return request.Governance with
         {
+            Intent = intent,
             Repeatability = repeatability with
             {
                 PromptHash = computedPromptHash,

@@ -4,7 +4,63 @@
 
 [![NuGet](https://img.shields.io/nuget/v/Goodtocode.Agents.Governance.svg?label=NuGet)](https://www.nuget.org/packages/Goodtocode.Agents.Governance)
 
-Use this package in any inference-driven workflow (Microsoft.Extensions.AI, Microsoft Agent Framework, or Semantic Kernel) to add consistent governance for:
+Use this package in any inference-driven workflow (Microsoft.Extensions.AI, Microsoft Agent Framework, or Semantic Kernel) to add consistent governance. Governance has two layers:
+
+- **Four assurance pillars** prove *how* every inference ran (Observability, Auditability, Repeatability, Defensibility).
+- **Policies** declare *what intent* the inference must serve. **Agentic Intent** is the first policy. Policies are not pillars: the pillars make a policy observable, repeatable, auditable and defensible.
+
+Most AI development stops at prompting and tracing. Governed development adds provable assurance **and** enforced intent on every inference.
+
+### Policy: Agentic Intent
+
+Agentic Intent is a versioned, hashable `IntentPolicy` made of ordered principles: **Boundary** (hard limits such as law and no direct harm), **Value** (growth, collaboration, respect) and **Conduct** (how to behave). Precedence is fixed: `Boundary > Value > Conduct > persona > user request`.
+
+| Concept | Cadence | Purpose |
+|---------|---------|---------|
+| **Instruction** | Once per chat session, playbook run or instantiation | Composed system instruction: persona, core directives, then the intent policy (which outranks the persona) |
+| **Preamble** | Before every chat message and every LLM Collect/Evaluate/Record action | Short deterministic reminder (`IGovernancePreambleComposer`): principle ids (compact) or full text, plus precedence. Never rendered as a chat bubble |
+| **Provider** | At resolve time | `IIntentPolicyProvider` supplies the policy per tenant and jurisdiction. No legal text is hard-coded in this package |
+
+How the pillars apply to Agentic Intent:
+
+| Pillar | Applied to Agentic Intent |
+|--------|---------------------------|
+| Observability | `governance.intent.*` and `governance.preamble.*` metadata carry policy id, version, hash and principle ids |
+| Repeatability | The policy hash is folded into `PromptHash`, so a policy change is replay drift. `GovernancePillarsProfile.IntentRequired` joins the lock hash |
+| Auditability | `EvaluationGovernanceRecord.Intent` persists policy id, version and hash per inference |
+| Defensibility | The Instruction requires decisions to cite the principle ids relied on, with a short justification and no chain-of-thought |
+
+Set `IntentRequired` (profile) and `Intent.Required` (record) to fail closed: validation and composition throw when no policy is supplied. The **Instruction** is a typed `AgentInstruction` (`Create(text, InstructionScope.Session | Playbook | Instantiation)`). It is guarded against prohibited fragments at creation, and its hash is folded into `PromptHash`, so an Instruction change is drift. Every governed turn is described by a `GovernedTurnRecord` (policy id, version, hash, instruction hash); a `GovernedTurnLedger` collects them so a host can drain them into step or chat metadata.
+
+**Output verification (Phase D):** `IIntentOutputVerifier` checks that an `IntentOutput` cites known principle ids with a short justification, and runs pluggable `IIntentOutputRule` hooks. `IntentVerificationResult.EnsurePassed()` fails closed. Prompting is guidance; verification is enforcement.
+
+See [feature-governance-agentic-intent.md](docs/product/features/feature-governance-agentic-intent.md).
+
+```csharp
+var policy = IntentPolicy.Create("intent.base", "1.0.0",
+[
+    IntentPrinciple.Create("boundary.no-harm", "Do no direct harm to people, agents or collectives.", IntentPrincipleKind.Boundary, 1),
+    IntentPrinciple.Create("value.respect", "Act with respect, collaboration and a bias to growth.", IntentPrincipleKind.Value, 1)
+]);
+
+// Instruction: once per session or run
+var result = enforcer.Enforce(new GovernanceEvaluationRequest
+{
+    Governance = record with { Intent = new IntentRecord { Required = true } },
+    Instruction = AgentInstruction.Create(persona, InstructionScope.Session),
+    IntentPolicy = policy
+});
+
+// Preamble: before every message or LLM action
+var preamble = new GovernancePreambleComposer().Compose(new GovernancePreambleRequest
+{
+    Policy = policy,
+    Turn = GovernedTurnKind.Chat,
+    Mode = GovernancePreambleMode.Compact
+});
+```
+
+### The four pillars
 
 | Pillar | Description (in parens) | Example persisted workflow data (`ActivityType`) |
 |--------|--------------------------|---------------------------------------------------|
